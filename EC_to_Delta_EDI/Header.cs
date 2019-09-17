@@ -8,7 +8,7 @@ public class Header
     private const string SecurityInfoQualifier           = "00";//ISA03
     private const string SecurityInfo                    = "          ";//ISA04
     private const string SenderIDQualifier               = "ZZ";//ISA05
-    private const string SenderID                        = "DDPPGGGGG      ";//ISA06
+    private const string SenderID                        = "DDPP07012      ";//ISA06
     private const string ReceiverIDQualifier             = "ZZ";
     private const string ReceiverID                      = "942411167      ";
     private string       InterchangeDate;

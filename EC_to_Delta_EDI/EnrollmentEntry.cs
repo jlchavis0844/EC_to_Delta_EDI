@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -112,8 +113,17 @@ namespace EC_to_VSP_EDI {
             BenefitStatusCode_INS05 = 'A';
             EmploymentStatusCode_INS08 = EmploymentStatusCodeTranslation(row.EmployeeStatus, row.JobClass);
 
-            if (row.SSN != null)
-                ReferenceNumber_REF02 = row.SSN.Replace("-","");
+            var memberSSN = (from record in Form1.records
+                             where record.EID == row.EID && record.RelationshipCode == "0"
+                             select record.SSN).First().ToString().Replace("-", "");
+
+            if (memberSSN != null && memberSSN != "") {
+                //ReferenceNumber_REF02 = row.SSN.Replace("-", "");
+                ReferenceNumber_REF02 = memberSSN;
+            } else {
+                //ReferenceNumber_REF02 = "         ";
+                Form1.log.Error("ERR: " + (++Form1.errorCounter) + "\tMissing SSN for the following:\n" + row.ToString());
+            }
 
             ReferenceNumberVSP_REF02 = row.Division;
             NameLast_NM103 = row.LastName;
@@ -124,6 +134,8 @@ namespace EC_to_VSP_EDI {
 
             if(row.SSN != null && row.SSN != "")
                 IdentificationCode_NM109 = row.SSN.Replace("-","");
+
+
             ContactName_PER02 = row.FirstName + " " + row.LastName;
             CommunicationNumberQualifier_PER03 = "HP";
 

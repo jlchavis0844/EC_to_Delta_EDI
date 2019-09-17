@@ -74,7 +74,7 @@ namespace EC_to_VSP_EDI {
                 ((TransactionSetPurpose != TransactionSetPurposes.Original) ? "****" : ("*" + TransactionSetPurpose + "*")) +
                 NotUsed_BGN07 + '*' + ActionCode + '*' + Empty_BGN09 + SegmentTerminator);
             //Ref
-            tempSB.AppendLine(SegmentIDRef + '*' + RefReferenceNumberQualifier + '*' + ReferenceNumber + SegmentTerminator);
+            tempSB.AppendLine(SegmentIDRef + '*' + RefReferenceNumberQualifier + '*' + RefReferenceNumber + SegmentTerminator);
             //DTP
             tempSB.AppendLine(SegmentID_DTP + '*' + DateTimeQualifier_DTP01 + '*' + DateTimePeriodFormatQualifier_DTP02 + '*' +
                 DateTimePeriod_DTOP03 + SegmentTerminator);
