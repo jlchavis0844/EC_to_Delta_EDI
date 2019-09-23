@@ -23,6 +23,7 @@ namespace EC_to_VSP_EDI {
         public static StringBuilder textOut;
         public static string enrollType;
         public static int errorCounter = 0;
+        public static Dictionary<string, string> dentalPlans = new Dictionary<string, string>();
 
         public Form1() {
             InitializeComponent();
@@ -41,6 +42,9 @@ namespace EC_to_VSP_EDI {
 
             lblInterchangeNumber.Text = "Interchange Number: " + interchangeNumber;
             dtPicker.Value = dt;
+
+            dentalPlans["CC63XA"] = "2020 Dental Plan";
+            dentalPlans["ERA6R4"] = "2020 Dental Plan";
 
             log.Info("Starting form loading at " + DateTime.Now);
         }
@@ -118,27 +122,27 @@ namespace EC_to_VSP_EDI {
 
             trailer = new Trailer();
 
-
-            Console.WriteLine(trailer.ToString());
-
             textOut = new StringBuilder();
             textOut.AppendLine(header.ToString());
             textOut.AppendLine(subHeader.ToString());
 
-            Console.WriteLine(header.ToString());
-            Console.WriteLine(subHeader.ToString());
+            //Console.WriteLine(header.ToString());
+            //Console.WriteLine(subHeader.ToString());
 
             foreach (var line in enrollments) {
                 textOut.AppendLine(line.ToString());
-                Console.WriteLine(line.ToString());
+                //Console.WriteLine(line.ToString());
             }
 
             textOut.AppendLine(trailer.ToString());
-            Console.WriteLine(trailer.ToString());
-            textOut = new StringBuilder(textOut.ToString().Replace("\r\n\r\n", "\r\n"));
+            //Console.WriteLine(trailer.ToString());
+            textOut = new StringBuilder(textOut.ToString()
+                .Replace("\r\n\r\n", "\r\n").Trim('\0'));
 
             tbTextOut.MaxLength = 10000;
             tbTextOut.Text = textOut.ToString();
+            Console.WriteLine(textOut.ToString());
+            Console.WriteLine(tbTextOut.Text);
             btnOutput.Enabled = true;
         }
 
@@ -178,10 +182,10 @@ namespace EC_to_VSP_EDI {
         private void btnOutput_Click(object sender, EventArgs e) {
             string outputFileLocation = outputFolder + @"\t" + DateTime.Now.ToString("yyyyMMdd") + ".txt";
             log.Info("attempting to save EDI to " + outputFileLocation);
-
+            char[] temp = new char[] { '\r', '\n' };
             try {
                 using (StreamWriter file = new StreamWriter(outputFileLocation, false)) {
-                    file.WriteLine(textOut.ToString());
+                    file.WriteLine(textOut.ToString().TrimEnd(temp));
                     lblOutputSave.Text = "Saved to " + outputFileLocation;
                 }
                 log.Info("saved output to " + outputFileLocation);

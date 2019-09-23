@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -8,24 +9,36 @@ namespace EC_to_VSP_EDI {
     public class EnrollmentEntry {
         public const char SegmentTerminator = '~';
 
+        public const string PLANCODE = "PP";
+        public const string GROUPID = "07012";
+
         //INS
         public const string SegmentID_INS = "INS";
-        public char         SubscriberIndicator_INS01;
-        public string       IndividualRelationshipCode_INS02;
+        public       string SubscriberIndicator_INS01;
+        public       string       IndividualRelationshipCode_INS02;
         public const string MaintenanceTypeCode_INS03 = "030";
-        public       string MaintenanceReasonCode_INS04;
-        public char         BenefitStatusCode_INS05;
-        //public       char   HandicapIndicator_INS06;
+        public const string MaintenanceReasonCode_INS04 = "";
+        public       string BenefitStatusCode_INS05;
+        public const string INS06 = "";
+        public const string INS07 = "";
         public       string EmploymentStatusCode_INS08;
         public       string StudentStatusCode_INS09;
         public       string HandicappedIndicator_INS10;
+        public const string INS11 = "";
+        public const string INS12 = "";
+        public const string INS13 = "";
+        public const string INS14 = "";
+        public const string INS15 = "";
+        public const string INS16 = "";
+        public const string BirthSequence_INS17 = "";
+
 
         //REF
         public const string SegmentID_REF = "REF";
         public const string ReferenceNumberQualifier_REF01 = "0F"; //SSN
         public string       ReferenceNumber_REF02;
         public const string ReferenceNumberQualifier2_REF01 = "1L";
-        public const string ReferenceNumber2_REF02 = "PPGGGGGDDDDD";
+        public       string ReferenceNumber2_REF02 = "";
         public string       ReferenceNumberQualifier3_REF01;
         public string       ReferenceNumber3_REF02;
         public const string ReferenceNumberQualifierVSP_REF01 = "DX"; //VSP division
@@ -64,7 +77,7 @@ namespace EC_to_VSP_EDI {
         public string ResidenceCity_N401;
         public string ResidenceState_N402;
         public string ResidenceZip_N403;
-        //public string      CountryCode_N404;
+        public string CountryCode_N404 = "";
 
         //DMG
         public const string SegmentID_DMG = "DMG";
@@ -72,7 +85,7 @@ namespace EC_to_VSP_EDI {
         public string DatetimePeriod_DMG02;
         public char GenderCode_DMG03;
         public char MaritalStatusCode_DMG04;
-        //public char RaceCode_DMG05;
+        public char RaceCode_DMG05;
         //public char CitizenshipStatusCode_DMG06;
 
         //LUI
@@ -83,13 +96,11 @@ namespace EC_to_VSP_EDI {
 
         //HD
         public const string SegmentID_HD = "HD";
-        public const string MaintenanceTypeCode_HD01 = "030";
+        public const string MaintenanceTypeCode_HD01 = "021";
         public const string Blank_HD02 = "";
-        public const string InsuranceLineCode_HD03 = "VIS";
-        public const string Blank_HD04 = "";
-        public string CoverageLevelCode_HD05;
-
-
+        public const string InsuranceLineCode_HD03 = "DEN";
+        public       string PlanCoverageDescription_HD04;
+        public       string CoverageLevelCode_HD05;
 
         //DTP
         public const string SegmentID_DTP = "DTP";
@@ -104,13 +115,36 @@ namespace EC_to_VSP_EDI {
         //Constructor
         public EnrollmentEntry(CensusRow row) {
             if (row.RelationshipCode == "0") {
-                SubscriberIndicator_INS01 = 'Y';
+                SubscriberIndicator_INS01 = "Y";
+                StudentStatusCode_INS09 = "";
             } else {
-                SubscriberIndicator_INS01 = 'N';
+                SubscriberIndicator_INS01 = "N";
+                if(row.StudentStatus== "Full-Time") {
+                    StudentStatusCode_INS09 = "F";
+                } else if(row.StudentStatus == "Part-Time") {
+                    StudentStatusCode_INS09 = "P";
+                } else {
+                    StudentStatusCode_INS09 = "";
+                }
             }
-            
+
+            if(row.JobClass.Contains("CHSTA") || row.JobClass.Contains("CACE")) {
+                ReferenceNumber2_REF02 = PLANCODE + GROUPID + "00510";
+            } else if(row.JobClass.Contains("CSEA")) {
+                ReferenceNumber2_REF02 = PLANCODE + GROUPID + "00508";
+            } else if(row.JobClass.Contains("SEIU")) {
+                ReferenceNumber2_REF02 = PLANCODE + GROUPID + "00511";
+            } else if(row.JobClass.Contains("CLASS-MGMT")) {
+                ReferenceNumber2_REF02 = PLANCODE + GROUPID + "00512";
+            } else if(row.JobClass.Contains("CERT-MGMT")) {
+                ReferenceNumber2_REF02 = PLANCODE + GROUPID + "00513";
+            } else {
+                ReferenceNumber2_REF02 = PLANCODE + GROUPID + "00000";
+            }
+
+            HandicappedIndicator_INS10 = row.Disabled == "Yes" ? "Y" : "N";
             IndividualRelationshipCode_INS02 = RelationshipTranslation(row.RelationshipCode);
-            BenefitStatusCode_INS05 = 'A';
+            BenefitStatusCode_INS05 = "A";
             EmploymentStatusCode_INS08 = EmploymentStatusCodeTranslation(row.EmployeeStatus, row.JobClass);
 
             var memberSSN = (from record in Form1.records
@@ -136,7 +170,7 @@ namespace EC_to_VSP_EDI {
                 IdentificationCode_NM109 = row.SSN.Replace("-","");
 
 
-            ContactName_PER02 = row.FirstName + " " + row.LastName;
+            ContactName_PER02 = (row.FirstName + " " + row.LastName).Trim();
             CommunicationNumberQualifier_PER03 = "HP";
 
             if(row.PersonalPhone != null && row.PersonalPhone != "")
@@ -167,39 +201,63 @@ namespace EC_to_VSP_EDI {
                 DateTimePeriod_Start_DTP03 = DateTime.Parse(row.PlanEffectiveStartDate).ToString("yyyyMMdd");
             }
 
-            if (row.PlanEffectiveEndDate != null && row.PlanEffectiveEndDate != "") {
-                DateTimePeriod_Start_DTP03 = DateTime.Parse(row.PlanEffectiveEndDate).ToString("yyyyMMdd");
+            PlanCoverageDescription_HD04 = Form1.dentalPlans[row.PlanImportID];
+            if(row.CoverageDetails == "Terminated") {
+                DateTimePeriod_End_DTP03 = DateTime.Parse(row.PlanEffectiveEndDate).ToString("yyyyMMdd");
             }
         }
 
         public new string ToString() {
             StringBuilder sb = new StringBuilder();
+            
             //INS
             sb.AppendLine(SegmentID_INS + '*' + SubscriberIndicator_INS01 + '*' + IndividualRelationshipCode_INS02 + '*' + MaintenanceTypeCode_INS03 + '*' +
-                MaintenanceReasonCode_INS04 + '*' + BenefitStatusCode_INS05 + SegmentTerminator);
+                MaintenanceReasonCode_INS04 + '*' + BenefitStatusCode_INS05 +'*' + INS06 + '*' + INS07 + '*' + EmploymentStatusCode_INS08 + '*' +
+                StudentStatusCode_INS09 + '*' + HandicappedIndicator_INS10 + '*' + INS11 + '*' + INS12 + '*' + INS13 + '*' + INS14 + '*' +
+                INS15 + '*' + INS16 + '*' + BirthSequence_INS17 + SegmentTerminator);
+            
             //REFA
             sb.AppendLine(SegmentID_REF + '*' + ReferenceNumberQualifier_REF01 + '*' + ReferenceNumber_REF02 + SegmentTerminator);
+
             //REFB
-            sb.AppendLine(SegmentID_REF + '*' + ReferenceNumberQualifierVSP_REF01 + '*' +  ReferenceNumberVSP_REF02 + SegmentTerminator);
+            sb.AppendLine(SegmentID_REF + '*' + ReferenceNumberQualifier2_REF01 + '*' + ReferenceNumber2_REF02 + SegmentTerminator);
+
+            //REFC
+            //sb.AppendLine(SegmentID_REF + '*' + ReferenceNumberQualifierVSP_REF01 + '*' +  ReferenceNumberVSP_REF02 + SegmentTerminator);
+            
             //NM1
             sb.AppendLine(SegmentID_NM1 + '*' +EntityIdentifierCode_NM101 + '*' + EntityTypeQualifier_NM102 + '*' + NameLast_NM103 + '*' 
-                + NameFirst_NM104 + '*' + NameInitial_NM105 + '*' + IdentificationCodeQualifier_NM108 + '*' + IdentificationCode_NM109 + SegmentTerminator);
+                + NameFirst_NM104 + '*' + NameInitial_NM105 + '*' + NM106 + '*' + NM107 + '*' + 
+                //Do not send NM108 and NM109 if MEMBER ssn is not given
+                (String.IsNullOrEmpty(IdentificationCode_NM109) ? "" :(IdentificationCodeQualifier_NM108 + '*' + IdentificationCode_NM109)) + SegmentTerminator);
+            
             //PER
             sb.AppendLine(SegmentID_PER + '*' + ContactFunctionCode_PER01 + '*' + ContactName_PER02 + '*' + CommunicationNumberQualifier_PER03 + '*' + 
                 CommunicationNumber_PER04 + SegmentTerminator);
             //N3
             sb.AppendLine(SegmentID_N3 + '*' + ResidenceAddressLine1_N301 + '*' + ResidenceAddressLine2_N302 + SegmentTerminator);
+            
             //N4
-            sb.AppendLine(SegmentID_N4 + '*' + ResidenceCity_N401 + '*' + ResidenceState_N402 + '*' + ResidenceZip_N403 + SegmentTerminator);
+            sb.AppendLine(SegmentID_N4 + '*' + ResidenceCity_N401 + '*' + ResidenceState_N402 + '*' + ResidenceZip_N403 + "*" + 
+                CountryCode_N404 +SegmentTerminator);
+            
             //DMG
-            sb.AppendLine(SegmentID_DMG + '*' + DateTimeFormatQualifier_DMG01 + '*' + DatetimePeriod_DMG02 + '*' + GenderCode_DMG03 + SegmentTerminator);
+            sb.AppendLine(SegmentID_DMG + '*' + DateTimeFormatQualifier_DMG01 + '*' + DatetimePeriod_DMG02 + '*' + 
+                GenderCode_DMG03 +'*' + MaritalStatusCode_DMG04 + SegmentTerminator);
+            
+            //LIU
+            //We good
+
+            //2300 
             //HD
-            sb.AppendLine(SegmentID_HD + '*' + MaintenanceTypeCode_HD01 + '*' + Blank_HD02 + '*' + InsuranceLineCode_HD03 + '*' + Blank_HD04 + '*' + 
-                CoverageLevelCode_HD05 + SegmentTerminator);
+            sb.AppendLine(SegmentID_HD + '*' + MaintenanceTypeCode_HD01 + '*' + Blank_HD02 + '*' + InsuranceLineCode_HD03 + '*' + 
+                PlanCoverageDescription_HD04 + '*' + CoverageLevelCode_HD05 + SegmentTerminator);
+            
             //DTP start
             sb.AppendLine(SegmentID_DTP + '*' + BenefitStartDate_DTP01 + '*' + DateTimeFormat_DTP02 + '*' + DateTimePeriod_Start_DTP03 + SegmentTerminator);
+            
             //DTP end
-            if(DateTimePeriod_End_DTP03 != null && DateTimePeriod_End_DTP03 !="") {
+            if(!String.IsNullOrEmpty(DateTimePeriod_End_DTP03)) {
                 sb.AppendLine(SegmentID_DTP + '*' + BenefitEndDate_DTP01 + '*' + DateTimeFormat_DTP02 + '*' + DateTimePeriod_End_DTP03 + SegmentTerminator);
             }
 

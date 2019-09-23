@@ -5,7 +5,7 @@ namespace EC_to_VSP_EDI {
     public class SubHeader {
         private const string SegmentIDGS = "GS";
         private const string FunctionalIDCode = "BE";
-        private const string SenderID = "DDPPGGGGG";
+        private const string SenderID = "DDPP07012";
         private const string ReceiverID = "942411167";
         private string GSDate;
         private string GSTime;
@@ -16,19 +16,23 @@ namespace EC_to_VSP_EDI {
         private const string TransactionIDCode = "834";
         private string TransactionSetControlNumber;
         private const string ImplementationConventionReference = "005010X220A1";
+
+        //BGN
         private const string SegmentIDBGN = "BGN";
         private string TransactionSetPurpose;//BGN01
-        private const string ReferenceNumber = "";//BGN02
+        private string ReferenceNumber;//BGN02
         private string BGNDate;//BGN03
         private string BGNTime;//BGN04
         private const string TimeCode_BGN = "PT"; //BGN05
-        private string ReferenceIdentification;//BGN006
+        private const string ReferenceIdentification_BGN06 ="";//BGN06
         private const string NotUsed_BGN07 = "";
         private const char ActionCode = '4';//BGN08
         private const string Empty_BGN09 = "";//BGN09
+
+        //REF
         private const string SegmentIDRef = "REF";
         private const string RefReferenceNumberQualifier = "38";//REF01
-        private const string RefReferenceNumber = "PPGGGGG";//REF02
+        private const string RefReferenceNumber = "PP07012";//REF02
 
         //DTP
         private const string SegmentID_DTP = "DTP";
@@ -39,6 +43,7 @@ namespace EC_to_VSP_EDI {
         private const string N1SegmentID = "N1";
         private const string EntityIdentCodeSponser = "P5";
         private const string PlanSponser = "TDS Group";
+        private const string IdentificationCode_N104 = "94-2239786";
         private const string N1IdentificationCodeQualifier = "FI";
         private const string Name_N1A = "Campbell Union HSD";
         private const string N1BEntityIdentifierCode = "IN";
@@ -55,6 +60,7 @@ namespace EC_to_VSP_EDI {
             GSTime = DateTime.Now.ToString("hhmm");
             GroupControlNumber = InterchangeTracker.GetInterchangeNumber();
             TransactionSetControlNumber = InterchangeTracker.GetInterchangeNumber().ToString().PadLeft(4,'0');
+            ReferenceNumber = TransactionSetControlNumber;
             TransactionSetPurpose = Form1.enrollType;
             BGNDate = GSDate;
             BGNTime = GSTime;
@@ -69,10 +75,11 @@ namespace EC_to_VSP_EDI {
             //ST
             tempSB.AppendLine(SegmentIDST + '*' + TransactionIDCode + '*' + TransactionSetControlNumber + '*' +
                 ImplementationConventionReference + SegmentTerminator);
+
             //BGN
-            tempSB.AppendLine(SegmentIDBGN + '*' + TransactionSetPurpose + '*' + ReferenceNumber + '*' + BGNDate + '*' + BGNTime + '*' + TimeCode_BGN + '*' +
-                ((TransactionSetPurpose != TransactionSetPurposes.Original) ? "****" : ("*" + TransactionSetPurpose + "*")) +
-                NotUsed_BGN07 + '*' + ActionCode + '*' + Empty_BGN09 + SegmentTerminator);
+            tempSB.AppendLine(SegmentIDBGN + '*' + ReferenceNumber + '*' + BGNDate + '*' + BGNTime + '*' + TimeCode_BGN + '*' +
+                ReferenceIdentification_BGN06 + '*' + NotUsed_BGN07 + '*' + ActionCode + SegmentTerminator);
+
             //Ref
             tempSB.AppendLine(SegmentIDRef + '*' + RefReferenceNumberQualifier + '*' + RefReferenceNumber + SegmentTerminator);
             //DTP
@@ -80,13 +87,13 @@ namespace EC_to_VSP_EDI {
                 DateTimePeriod_DTOP03 + SegmentTerminator);
             //N1A
             tempSB.AppendLine(N1SegmentID + '*' + EntityIdentCodeSponser + '*' + Name_N1A + '*' + 
-                N1IdentificationCodeQualifier + '*' + SenderID + SegmentTerminator);
+                N1IdentificationCodeQualifier + '*' + IdentificationCode_N104 + SegmentTerminator);
             //N1B
             tempSB.AppendLine(N1SegmentID + '*' + N1BEntityIdentifierCode + '*' + N1BName + '*' + 
                 N1IdentificationCodeQualifier + '*' + ReceiverID + SegmentTerminator);
             //N1C
-            tempSB.AppendLine(N1SegmentID + '*' + N1CEntityIdentifierCode + '*' + N1CName + '*' + N1IdentificationCodeQualifier + '*' + 
-                SenderID + SegmentTerminator);
+            tempSB.AppendLine(N1SegmentID + '*' + N1CEntityIdentifierCode + '*' + N1CName + '*' + N1IdentificationCodeQualifier + '*' +
+                N1CIdentificationCode + SegmentTerminator);
 
             return tempSB.ToString();
         }
