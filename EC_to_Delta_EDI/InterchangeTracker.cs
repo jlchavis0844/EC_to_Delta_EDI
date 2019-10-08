@@ -1,41 +1,52 @@
-﻿using EC_to_VSP_EDI;
+﻿// <copyright file="InterchangeTracker.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
 using System;
 using System.IO;
+using EC_to_VSP_EDI;
 
 public static class InterchangeTracker {
     public static string CWD = Directory.GetCurrentDirectory();
     public static string FILENAME = @"\ict.dat";
+    private const uint V = 1;
 
     public static uint GetInterchangeNumber() {
-        if(File.Exists(CWD + FILENAME)) {
-            //return Convert.ToUInt32(File.ReadAllText(CWD + FILENAME).Trim());
+        if (File.Exists(CWD + FILENAME)) {
+            // return Convert.ToUInt32(File.ReadAllText(CWD + FILENAME).Trim());
             return Convert.ToUInt32(File.ReadAllLines(CWD + FILENAME)[0].Trim());
         } else {
-            if(CreateNewInterchange()) {
-                return (uint)1;
-            } else return (uint)0;
+            if (CreateNewInterchange()) {
+                return V;
+            } else {
+                return 0U;
+            }
         }
     }
 
     public static string GetInterchangeDate() {
-        if(File.Exists(CWD + FILENAME)) {
-            //return Convert.ToUInt32(File.ReadAllText(CWD + FILENAME).Trim());
+        if (File.Exists(CWD + FILENAME)) {
+            // return Convert.ToUInt32(File.ReadAllText(CWD + FILENAME).Trim());
             return File.ReadAllLines(CWD + FILENAME)[1].Trim();
         } else {
-            if(CreateNewInterchange()) {
+            if (CreateNewInterchange()) {
                 return GetInterchangeDate();
-            } else return null;
+            } else {
+                return null;
+            }
         }
     }
 
     public static string GetInterchangeTime() {
-        if(File.Exists(CWD + FILENAME)) {
-            //return Convert.ToUInt32(File.ReadAllText(CWD + FILENAME).Trim());
+        if (File.Exists(CWD + FILENAME)) {
+            // return Convert.ToUInt32(File.ReadAllText(CWD + FILENAME).Trim());
             return File.ReadAllLines(CWD + FILENAME)[2].Trim();
         } else {
-            if(CreateNewInterchange()) {
+            if (CreateNewInterchange()) {
                 return GetInterchangeTime();
-            } else return null;
+            } else {
+                return null;
+            }
         }
     }
 
@@ -45,9 +56,10 @@ public static class InterchangeTracker {
             string value = temp + "\n" + GetInterchangeDate() + "\n" + GetInterchangeTime();
             File.WriteAllText(CWD + FILENAME, value);
             return temp;
-        } catch(Exception e) {
-            Form1.log.Error(e);
-            //Console.WriteLine(e);
+        } catch (Exception e) {
+            Form1.Log.Error(e);
+
+            // Console.WriteLine(e);
             return 0;
         }
     }
@@ -58,8 +70,8 @@ public static class InterchangeTracker {
             string value = temp + "\n" + GetInterchangeDate() + "\n" + GetInterchangeTime();
             File.WriteAllText(CWD + FILENAME, value);
             return temp;
-        } catch(Exception e) {
-            Form1.log.Error(e);
+        } catch (Exception e) {
+            Form1.Log.Error(e);
             return 0;
         }
     }
@@ -68,8 +80,8 @@ public static class InterchangeTracker {
         try {
             string value = newNumber + "\n" + GetInterchangeDate() + "\n" + GetInterchangeTime();
             File.WriteAllText(CWD + FILENAME, value);
-        } catch(Exception e) {
-            Form1.log.Error(e);
+        } catch (Exception e) {
+            Form1.Log.Error(e);
             return false;
         }
 
@@ -80,8 +92,8 @@ public static class InterchangeTracker {
         try {
             string value = GetInterchangeNumber() + "\n" + newDate.ToString("yyMMdd") + "\n" + GetInterchangeTime();
             File.WriteAllText(CWD + FILENAME, value);
-        } catch(Exception e) {
-            Form1.log.Error(e);
+        } catch (Exception e) {
+            Form1.Log.Error(e);
             return false;
         }
 
@@ -92,8 +104,8 @@ public static class InterchangeTracker {
         try {
             string value = GetInterchangeNumber() + "\n" + GetInterchangeDate() + "\n" + newTime.ToString("hhmm");
             File.WriteAllText(CWD + FILENAME, value);
-        } catch(Exception e) {
-            Form1.log.Error(e);
+        } catch (Exception e) {
+            Form1.Log.Error(e);
             return false;
         }
 
@@ -106,9 +118,9 @@ public static class InterchangeTracker {
             string newFile = "1\n" + now.ToString("yyMMdd") + "\n" + now.ToString("hhmm");
             File.WriteAllText(CWD + FILENAME, newFile);
             return true;
-        } catch(Exception e) {
-            //Console.WriteLine(e);
-            Form1.log.Error(e);
+        } catch (Exception e) {
+            // Console.WriteLine(e);
+            Form1.Log.Error(e);
             return false;
         }
     }
@@ -117,15 +129,18 @@ public static class InterchangeTracker {
         uint oldNum = GetInterchangeNumber();
         bool numUpdated = (oldNum < IncrementNumber()) && (oldNum > 1);
 
-        if(!numUpdated)
+        if (!numUpdated) {
             return false;
+        }
 
         DateTime now = DateTime.Now;
-        if(!SetInterchangeDate(now)) {
+        if (!SetInterchangeDate(now)) {
             return false;
-        } else if(!SetInterchangeTime(now)) {
+        } else if (!SetInterchangeTime(now)) {
             return false;
-        } else return true;
+        } else {
+            return true;
+        }
     }
 
     public static new string ToString() {

@@ -1,28 +1,31 @@
-﻿
+﻿// <copyright file="Trailer.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
 namespace EC_to_VSP_EDI {
     public class Trailer {
-        private const string SegmentID_SE = "SE";
-        private string NumberOfIncludedSegments_SE01;
-        private string TransactionSetControlNumber_SE02;
-        private const string SegmentID_GE = "GE";
-        private const string NumberOfTransactionSetsIncluded_GE01 = "1";
-        private string GroupControlNumber_GE02;
-        private const string SegmentID_IEA = "IEA";
-        private const string NumberOfFunctionalGroupsIncluded_IEA01 = "1";
-        private string InterchangeControlNumber_IEA02;
+        private const string SegmentIDSE = "SE";
+        private readonly string numberOfIncludedSegmentsSE01;
+        private readonly string transactionSetControlNumberSE02;
+        private const string SegmentIDGE = "GE";
+        private const string NumberOfTransactionSetsIncludedGE01 = "1";
+        private readonly string groupControlNumberGE02;
+        private const string SegmentIDIEA = "IEA";
+        private const string NumberOfFunctionalGroupsIncludedIEA01 = "1";
+        private readonly string interchangeControlNumberIEA02;
         private const string SegmentTerminator = "~";
 
         public Trailer() {
-            NumberOfIncludedSegments_SE01 = Form1.enrollments.Count.ToString();
-            TransactionSetControlNumber_SE02 = InterchangeTracker.GetInterchangeNumber().ToString();
-            GroupControlNumber_GE02 = TransactionSetControlNumber_SE02.PadLeft(4, '0');
-            InterchangeControlNumber_IEA02 = TransactionSetControlNumber_SE02;
+            this.numberOfIncludedSegmentsSE01 = Form1.Enrollments.Count.ToString();
+            this.transactionSetControlNumberSE02 = InterchangeTracker.GetInterchangeNumber().ToString();
+            this.groupControlNumberGE02 = this.transactionSetControlNumberSE02.PadLeft(4, '0');
+            this.interchangeControlNumberIEA02 = this.transactionSetControlNumberSE02;
         }
 
         public new string ToString() {
-            return SegmentID_SE + '*' + NumberOfIncludedSegments_SE01 + '*' + TransactionSetControlNumber_SE02.PadLeft(4, '0') + SegmentTerminator + '\n' +
-                SegmentID_GE + '*' + NumberOfTransactionSetsIncluded_GE01 + '*' + GroupControlNumber_GE02 + SegmentTerminator + '\n' +
-                SegmentID_IEA + '*' + NumberOfFunctionalGroupsIncluded_IEA01 + '*' + InterchangeControlNumber_IEA02.PadLeft(9, '0') + SegmentTerminator;
+            return SegmentIDSE + '*' + this.numberOfIncludedSegmentsSE01 + '*' + this.transactionSetControlNumberSE02.PadLeft(4, '0') + SegmentTerminator + '\n' +
+                SegmentIDGE + '*' + NumberOfTransactionSetsIncludedGE01 + '*' + this.groupControlNumberGE02 + SegmentTerminator + '\n' +
+                SegmentIDIEA + '*' + NumberOfFunctionalGroupsIncludedIEA01 + '*' + this.interchangeControlNumberIEA02.PadLeft(9, '0') + SegmentTerminator;
         }
     }
 }

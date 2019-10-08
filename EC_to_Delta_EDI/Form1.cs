@@ -1,34 +1,39 @@
-﻿using CsvHelper;
-using log4net;
-using Syroot.Windows.IO;
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Windows.Forms;
+﻿// <copyright file="Form1.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace EC_to_VSP_EDI {
+    using System;
+    using System.Collections.Generic;
+    using System.Data;
+    using System.IO;
+    using System.Linq;
+    using System.Reflection;
+    using System.Text;
+    using System.Windows.Forms;
+    using CsvHelper;
+    using log4net;
+    using Syroot.Windows.IO;
+
     public partial class Form1 : Form {
-        public static string INPUTFILE;
-        public static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-        public static Header header;
-        public static SubHeader subHeader;
-        public static Trailer trailer;
-        public static List<EnrollmentEntry> enrollments = new List<EnrollmentEntry>();
-        public static List<CensusRow> records = new List<CensusRow>();
-        public static string outputFolder;
-        public static StringBuilder textOut;
-        public static string enrollType;
-        public static int errorCounter = 0;
-        public static Dictionary<string, string> dentalPlans = new Dictionary<string, string>();
+        public static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+        public static string EnrollType;
+        public static string InputFile;
+        public static Header Header;
+        public static SubHeader SubHeader;
+        public static Trailer Trailer;
+        public static List<EnrollmentEntry> Enrollments = new List<EnrollmentEntry>();
+        public static List<CensusRow> Records = new List<CensusRow>();
+        public static string OutputFolder;
+        public static StringBuilder TextOut;
+        public static int ErrorCounter = 0;
+        public static Dictionary<string, string> DentalPlans = new Dictionary<string, string>();
 
         public Form1() {
-            InitializeComponent();
-            cbType.SelectedIndex = 0;
-            //log4net.Config.XmlConfigurator.Configure();
+            this.InitializeComponent();
+            this.cbType.SelectedIndex = 0;
+
+            // log4net.Config.XmlConfigurator.Configure();
             string interchangeNumber = InterchangeTracker.GetInterchangeNumber().ToString();
             string dateStr = InterchangeTracker.GetInterchangeDate();
             int year = Convert.ToInt32("20" + dateStr.Substring(0, 2));
@@ -40,128 +45,127 @@ namespace EC_to_VSP_EDI {
 
             DateTime dt = new DateTime(year, mon, day, hour, min, 0);
 
-            lblInterchangeNumber.Text = "Interchange Number: " + interchangeNumber;
-            dtPicker.Value = dt;
+            this.lblInterchangeNumber.Text = "Interchange Number: " + interchangeNumber;
+            this.dtPicker.Value = dt;
 
-            dentalPlans["CC63XA"] = "2020 Dental Plan";
-            dentalPlans["ERA6R4"] = "2020 Dental Plan";
+            DentalPlans["CC63XA"] = "2020 Dental Plan";
+            DentalPlans["ERA6R4"] = "2020 Dental Plan";
 
-            log.Info("Starting form loading at " + DateTime.Now);
+            Log.Info("Starting form loading at " + DateTime.Now);
         }
 
-        public void btnLoadFile_Click(object sender, EventArgs e) {
-            log.Info("Load button clicked");
+        public void BtnLoadFile_Click(object sender, EventArgs e) {
+            Log.Info("Load button clicked");
             string type = "csv";
-            
+
             using (OpenFileDialog ofd = new OpenFileDialog()) {
                 ofd.InitialDirectory = KnownFolders.Downloads.Path;
                 ofd.Filter = type + " files (*." + type + ")| *." + type;
                 ofd.FilterIndex = 1;
 
                 if (ofd.ShowDialog() == DialogResult.OK) {
-                    INPUTFILE = ofd.FileName;
-                    log.Info(INPUTFILE + " loaded");
-                    lblFileLocation.Text = INPUTFILE;
-                    btnProcessEDI.Enabled = true;
+                    InputFile = ofd.FileName;
+                    Log.Info(InputFile + " loaded");
+                    this.lblFileLocation.Text = InputFile;
+                    this.btnProcessEDI.Enabled = true;
 
-                    using (var reader = new StreamReader(INPUTFILE)) {
+                    using (var reader = new StreamReader(InputFile)) {
                         var csv = new CsvReader(reader);
                         csv.Configuration.HeaderValidated = null;
                         csv.Configuration.HasHeaderRecord = true;
                         csv.Configuration.RegisterClassMap<CensusRowClassMap>();
 
-                        records = csv.GetRecords<CensusRow>().Where(rec => rec.CoverageDetails != "Waived" 
+                        Records = csv.GetRecords<CensusRow>().Where(rec => rec.CoverageDetails != "Waived"
                         && DateTime.Parse(rec.PlanEffectiveEndDate) >= DateTime.Now).ToList()
                         .Where(rec =>
                             rec.CoverageDetails != "Waived" &&
                             DateTime.Parse(rec.PlanEffectiveEndDate) >= DateTime.Now &&
-                            rec.PlanType == "Dental"
-                        ).ToList();
+                            rec.PlanType == "Dental").ToList();
 
-                        log.Info(records.Count() + " records loaded from Census file.");
+                        Log.Info(Records.Count() + " records loaded from Census file.");
                     }
                 } else {
                     MessageBox.Show("ERROR LOADING INPUT FILE", "ERROR LOADING INPUT FILE", MessageBoxButtons.OK);
-                    log.Info("No file chosen");
+                    Log.Info("No file chosen");
                     Application.Exit();
                 }
             }
         }
 
-        public void button1_Click(object sender, EventArgs e) {
-            if (!File.Exists(lblFileLocation.Text)) {
-                log.Info("no file found loaded\n" + lblFileLocation);
-                btnProcessEDI.Enabled = false;
+        public void Button1_Click(object sender, EventArgs e) {
+            if (!File.Exists(this.lblFileLocation.Text)) {
+                Log.Info("no file found loaded\n" + this.lblFileLocation);
+                this.btnProcessEDI.Enabled = false;
                 return;
             }
 
-            switch (cbType.SelectedIndex) {
+            switch (this.cbType.SelectedIndex) {
                 case 1:
-                    enrollType = TransactionSetPurposes.Original;
+                    EnrollType = TransactionSetPurposes.Original;
                     break;
 
                 case 2:
-                    enrollType = TransactionSetPurposes.ReSubmission;
+                    EnrollType = TransactionSetPurposes.ReSubmission;
                     break;
 
                 case 3:
-                    enrollType = TransactionSetPurposes.InformationCopy;
+                    EnrollType = TransactionSetPurposes.InformationCopy;
                     break;
 
                 default:
-                    enrollType = TransactionSetPurposes.Test;
+                    EnrollType = TransactionSetPurposes.Test;
                     break;
             }
 
-            subHeader = new SubHeader();
-            header = new Header();
+            SubHeader = new SubHeader();
+            Header = new Header();
 
-            foreach (var row in records) {
-                enrollments.Add(new EnrollmentEntry(row));
+            foreach (var row in Records) {
+                Enrollments.Add(new EnrollmentEntry(row));
             }
 
-            trailer = new Trailer();
+            Trailer = new Trailer();
 
-            textOut = new StringBuilder();
-            textOut.AppendLine(header.ToString());
-            textOut.AppendLine(subHeader.ToString());
+            TextOut = new StringBuilder();
+            TextOut.AppendLine(Header.ToString());
+            TextOut.AppendLine(SubHeader.ToString());
 
-            //Console.WriteLine(header.ToString());
-            //Console.WriteLine(subHeader.ToString());
+            // Console.WriteLine(header.ToString());
+            // Console.WriteLine(subHeader.ToString());
+            foreach (var line in Enrollments) {
+                TextOut.AppendLine(line.ToString());
 
-            foreach (var line in enrollments) {
-                textOut.AppendLine(line.ToString());
-                //Console.WriteLine(line.ToString());
+                // Console.WriteLine(line.ToString());
             }
 
-            textOut.AppendLine(trailer.ToString());
-            //Console.WriteLine(trailer.ToString());
-            textOut = new StringBuilder(textOut.ToString()
+            TextOut.AppendLine(Trailer.ToString());
+
+            // Console.WriteLine(trailer.ToString());
+            TextOut = new StringBuilder(TextOut.ToString()
                 .Replace("\r\n\r\n", "\r\n").Trim('\0'));
 
-            tbTextOut.MaxLength = 10000;
-            tbTextOut.Text = textOut.ToString();
-            Console.WriteLine(textOut.ToString());
-            Console.WriteLine(tbTextOut.Text);
-            btnOutput.Enabled = true;
+            this.tbTextOut.MaxLength = 10000;
+            this.tbTextOut.Text = TextOut.ToString();
+            Console.WriteLine(TextOut.ToString());
+            Console.WriteLine(this.tbTextOut.Text);
+            this.btnOutput.Enabled = true;
         }
 
-        private void btnSaveFile_Click(object sender, EventArgs e) {
+        private void BtnSaveFile_Click(object sender, EventArgs e) {
             FolderBrowserDialog fbd = new FolderBrowserDialog();
             fbd.Description = "Select the directory to output files to";
             fbd.ShowNewFolderButton = true;
-            //fbd.RootFolder = Environment.SpecialFolder.MyDocuments;
 
+            // fbd.RootFolder = Environment.SpecialFolder.MyDocuments;
             DialogResult result = fbd.ShowDialog();
-            if(result == DialogResult.OK) {
-                outputFolder = fbd.SelectedPath;
-                log.Info("Output directory set to " + outputFolder);
-                lblOutPutFolder.Text = outputFolder;
+            if (result == DialogResult.OK) {
+                OutputFolder = fbd.SelectedPath;
+                Log.Info("Output directory set to " + OutputFolder);
+                this.lblOutPutFolder.Text = OutputFolder;
             }
-            
         }
 
-        private void btnUpdate_Click(object sender, EventArgs e) {
+        private void BtnUpdate_Click(object sender, EventArgs e) {
             InterchangeTracker.UpdateInterchange();
             string interchangeNumber = InterchangeTracker.GetInterchangeNumber().ToString();
             string dateStr = InterchangeTracker.GetInterchangeDate();
@@ -174,26 +178,26 @@ namespace EC_to_VSP_EDI {
 
             DateTime dt = new DateTime(year, mon, day, hour, min, 0);
 
-            lblInterchangeNumber.Text = "Interchange Number: " + interchangeNumber;
-            dtPicker.Value = dt;
-            log.Info("updated interchange to " + InterchangeTracker.ToString());
+            this.lblInterchangeNumber.Text = "Interchange Number: " + interchangeNumber;
+            this.dtPicker.Value = dt;
+            Log.Info("updated interchange to " + InterchangeTracker.ToString());
         }
 
-        private void btnOutput_Click(object sender, EventArgs e) {
-            string outputFileLocation = outputFolder + @"\t" + DateTime.Now.ToString("yyyyMMdd") + ".txt";
-            log.Info("attempting to save EDI to " + outputFileLocation);
+        private void BtnOutput_Click(object sender, EventArgs e) {
+            string outputFileLocation = OutputFolder + @"\t" + DateTime.Now.ToString("yyyyMMdd") + ".txt";
+            Log.Info("attempting to save EDI to " + outputFileLocation);
             char[] temp = new char[] { '\r', '\n' };
             try {
                 using (StreamWriter file = new StreamWriter(outputFileLocation, false)) {
-                    file.WriteLine(textOut.ToString().TrimEnd(temp));
-                    lblOutputSave.Text = "Saved to " + outputFileLocation;
+                    file.WriteLine(TextOut.ToString().TrimEnd(temp));
+                    this.lblOutputSave.Text = "Saved to " + outputFileLocation;
                 }
-                log.Info("saved output to " + outputFileLocation);
-            } catch(Exception ex) {
-                errorCounter++;
-                log.Error("ERROR\n" + ex);
-            }
 
+                Log.Info("saved output to " + outputFileLocation);
+            } catch (Exception ex) {
+                ErrorCounter++;
+                Log.Error("ERROR\n" + ex);
+            }
         }
     }
 }

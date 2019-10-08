@@ -1,6 +1,9 @@
-﻿
+﻿// <copyright file="Codes.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+
 namespace EC_to_VSP_EDI {
-    public static class EmploymentStatusCodes {
+    public static class Codes {
         public static string ActiveOversees = "AO";
         public static string ActiveMilitary = "AU";
         public static string FullTime = "FT";
@@ -78,7 +81,6 @@ namespace EC_to_VSP_EDI {
         public static char WhiteNonHispanic = 'O';
         public static char PacificIslander = 'P';
         public static char MutuallyDefined = 'Z';
-
     }
 
     public static class CitizenshipCodes {
