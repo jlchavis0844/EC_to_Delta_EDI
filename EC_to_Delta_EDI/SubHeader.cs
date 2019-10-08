@@ -30,7 +30,7 @@ namespace EC_to_VSP_EDI {
         private const string TimeCodeBGN = "PT"; // BGN05
         private const string ReferenceIdentificationBGN06 = ""; // BGN06
         private const string NotUsedBGN07 = "";
-        private const char ActionCode = '4'; // BGN08
+        private const char ActionCode = '2'; // BGN08
         private const string EmptyBGN09 = ""; // BGN09
 
         // REF

@@ -7,13 +7,13 @@ using EC_to_VSP_EDI;
 public class Header {
     private const string SegmentID = "ISA";
     private const string AuthorizationInfoQualifier = "00"; // ISA01
-    private const string AuthorizationInfo = "          "; // ISA02
+    private readonly string AuthorizationInfo = string.Empty.PadLeft(10); // ISA02
     private const string SecurityInfoQualifier = "00"; // ISA03
-    private const string SecurityInfo = "          "; // ISA04
+    private readonly string SecurityInfo = string.Empty.PadRight(10); // ISA04
     private const string SenderIDQualifier = "ZZ"; // ISA05
-    private const string SenderID = "DDCA07012      "; // ISA06
+    private readonly string SenderID = "DDCA07012".PadRight(15); // ISA06
     private const string ReceiverIDQualifier = "ZZ";
-    private const string ReceiverID = "942411167      ";
+    private readonly string ReceiverID = "942411167".PadRight(15);
     private readonly string interchangeDate;
     private readonly string interchangeTime;
     private const char InterchangeControlID = '^';

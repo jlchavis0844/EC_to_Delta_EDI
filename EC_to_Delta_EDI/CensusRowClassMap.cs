@@ -97,7 +97,7 @@ public class CensusRowClassMap : ClassMap<CensusRow> {
         this.Map(m => m.LastModifiedBy).Name("Last Modified By");
         this.Map(m => m.E_SignDate).Name("E-Sign Date");
         this.Map(m => m.CalPERS_ID).Name("CalPERS ID");
-
+        this.Map(m => m.NewBusiness).Name("New Business");
         // Map(m => m.EnrolledBy).Name("Enrolled By");
         // Map(m => m.NewBusiness).Name("New Business");
     }

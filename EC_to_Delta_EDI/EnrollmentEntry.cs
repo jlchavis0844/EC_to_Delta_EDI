@@ -19,20 +19,20 @@ namespace EC_to_VSP_EDI {
         private readonly string subscriberIndicatorINS01;
         private readonly string individualRelationshipCodeINS02;
         private const string MaintenanceTypeCodeINS03 = "030";
-        private const string MaintenanceReasonCodeINS04 = "";
+        private readonly string MaintenanceReasonCodeINS04 = string.Empty;
         private readonly string benefitStatusCodeINS05;
-        private const string INS06 = "";
-        private const string INS07 = "";
+        private readonly string INS06 = string.Empty;
+        private readonly string INS07 = string.Empty;
         private readonly string employmentStatusCodeINS08;
         private readonly string studentStatusCodeINS09;
         private readonly string handicappedIndicatorINS10;
-        private const string INS11 = "";
-        private const string INS12 = "";
-        private const string INS13 = "";
-        private const string INS14 = "";
-        private const string INS15 = "";
-        private const string INS16 = "";
-        private const string BirthSequenceINS17 = "";
+        private readonly string INS11 = string.Empty;
+        private readonly string INS12 = string.Empty;
+        private readonly string INS13 = string.Empty;
+        private readonly string INS14 = string.Empty;
+        private readonly string INS15 = string.Empty;
+        private readonly string INS16 = string.Empty;
+        private readonly string BirthSequenceINS17 = string.Empty;
 
         // REF
         private const string SegmentIDREF = "REF";
@@ -43,7 +43,7 @@ namespace EC_to_VSP_EDI {
         // private readonly string referenceNumberQualifier3REF01;
         // private readonly string referenceNumber3REF02;
         // private const string ReferenceNumberQualifierVSPREF01 = "DX"; // VSP division
-        // private readonly string referenceNumberVSPREF02;
+        private readonly string referenceNumberVSPREF02;
 
         // NM1
         private const string SegmentIDNM1 = "NM1";
@@ -52,8 +52,8 @@ namespace EC_to_VSP_EDI {
         private readonly string nameLastNM103;
         private readonly string nameFirstNM104;
         private readonly char nameInitialNM105;
-        private const string NM106 = "";
-        private const string NM107 = "";
+        private readonly string NM106 = string.Empty;
+        private readonly string NM107 = string.Empty;
         private const string IdentificationCodeQualifierNM108 = "34";
         private readonly string identificationCodeNM109; // Member SSN
 
@@ -99,8 +99,8 @@ namespace EC_to_VSP_EDI {
 
         // HD
         private const string SegmentIDHD = "HD";
-        private const string MaintenanceTypeCodeHD01 = "021";
-        private const string BlankHD02 = "";
+        private readonly string MaintenanceTypeCodeHD01;
+        private readonly string BlankHD02 = string.Empty;
         private const string InsuranceLineCodeHD03 = "DEN";
         private readonly string planCoverageDescriptionHD04;
         private readonly string coverageLevelCodeHD05;
@@ -130,6 +130,11 @@ namespace EC_to_VSP_EDI {
                     this.studentStatusCodeINS09 = string.Empty;
                 }
             }
+
+            //Workaround to give emp Job Class to Depend
+            var jClass = Form1.Records.Where(x => x.EID == row.EID
+                && x.RelationshipCode == "0").Select(y => y.JobClass).First().ToString();
+            row.JobClass = jClass;
 
             if (row.JobClass.Contains("CHSTA") || row.JobClass.Contains("CACE")) {
                 this.referenceNumber2REF02 = PLANCODE + GROUPID + "00510";
@@ -209,6 +214,14 @@ namespace EC_to_VSP_EDI {
             this.planCoverageDescriptionHD04 = Form1.DentalPlans[row.PlanImportID];
             if (row.CoverageDetails == "Terminated") {
                 this.dateTimePeriodEndDTP03 = DateTime.Parse(row.PlanEffectiveEndDate).ToString("yyyyMMdd");
+            }
+
+            if (row.CoverageDetails == "Terminated") {
+                this.MaintenanceReasonCodeINS04 = "024";
+            } else if (row.NewBusiness == "Yes") {
+                this.MaintenanceReasonCodeINS04 = "021";
+            } else {
+                this.MaintenanceReasonCodeINS04 = "001";
             }
         }
 

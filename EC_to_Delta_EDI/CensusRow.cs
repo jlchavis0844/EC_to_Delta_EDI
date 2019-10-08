@@ -5,6 +5,8 @@
 using CsvHelper.Configuration;
 
 public class CensusRow {
+    public string NewBusiness;
+
     public string CompanyName { get; set; }
 
     public string EID { get; set; }
@@ -215,7 +217,7 @@ public class CensusRow {
             this.AgeDetermination + " | " + this.Carrier + " | " + this.TotalRate + " | " + this.EmployeeRate + " | " +
             this.SpouseRate + " | " + this.ChildrenRate + " | " + this.EmployeeContribution + " | " + this.EmployeePre_TaxCost + " | " +
             this.EmployeePost_TaxCost + " | " + this.EmployeeCostPerDeductionPeriod + " | " + this.PlanDeductionCycle + " | " +
-            this.LastModifiedDate + " | " + this.LastModifiedBy + " | " + this.E_SignDate + " | " + this.CalPERS_ID;
+            this.LastModifiedDate + " | " + this.LastModifiedBy + " | " + this.E_SignDate + " | " + this.CalPERS_ID + " | " + this.NewBusiness;
         return retStr.Replace("  ", " ");
     }
 }
