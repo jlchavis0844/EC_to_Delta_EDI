@@ -188,6 +188,9 @@ public class CensusRow {
     public string E_SignDate { get; set; }
 
     public string CalPERS_ID { get; set; }
+    public string Add { get; set; }
+    public string Drop { get; set; }
+
 
     // public string EnrolledBy { get; set; }
     // public string NewBusiness { get; set; }

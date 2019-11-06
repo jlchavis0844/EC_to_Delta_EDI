@@ -18,7 +18,7 @@ namespace EC_to_VSP_EDI {
         private const string SegmentIDINS = "INS";
         private readonly string subscriberIndicatorINS01;
         private readonly string individualRelationshipCodeINS02;
-        private const string MaintenanceTypeCodeINS03 = "030";
+        private readonly string MaintenanceTypeCodeINS03;
         private readonly string MaintenanceReasonCodeINS04 = string.Empty;
         private readonly string benefitStatusCodeINS05;
         private readonly string INS06 = string.Empty;
@@ -51,7 +51,7 @@ namespace EC_to_VSP_EDI {
         private const char EntityTypeQualifierNM102 = '1';
         private readonly string nameLastNM103;
         private readonly string nameFirstNM104;
-        private readonly char nameInitialNM105;
+        private readonly string nameInitialNM105;
         private readonly string NM106 = string.Empty;
         private readonly string NM107 = string.Empty;
         private const string IdentificationCodeQualifierNM108 = "34";
@@ -172,8 +172,8 @@ namespace EC_to_VSP_EDI {
             this.nameFirstNM104 = row.FirstName;
 
             if (row.MiddleName.Length > 0) {
-                this.nameInitialNM105 = row.MiddleName[0];
-            }
+                this.nameInitialNM105 = row.MiddleName.Substring(0, 1);
+            } else this.nameInitialNM105 = string.Empty;
 
             if (row.SSN != null && row.SSN != string.Empty) {
                 this.identificationCodeNM109 = row.SSN.Replace("-", string.Empty);
@@ -223,6 +223,14 @@ namespace EC_to_VSP_EDI {
             } else {
                 this.MaintenanceReasonCodeINS04 = "001";
             }
+
+            if (subscriberIndicatorINS01 == "Y" && row.Drop == "TRUE") {
+                MaintenanceTypeCodeINS03 = "024";
+            } else if (row.Add == "TRUE") {
+                MaintenanceTypeCodeINS03 = "021";
+            } else if (row.Drop == "TRUE") {
+                MaintenanceTypeCodeINS03 = "001";
+            } else MaintenanceTypeCodeINS03 = "030";
         }
 
         public new string ToString() {

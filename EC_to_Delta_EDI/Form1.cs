@@ -144,7 +144,7 @@ namespace EC_to_VSP_EDI {
             TextOut = new StringBuilder(TextOut.ToString()
                 .Replace("\r\n\r\n", "\r\n").Trim('\0'));
 
-            this.tbTextOut.MaxLength = 10000;
+            //this.tbTextOut.MaxLength = 10000;
             this.tbTextOut.Text = TextOut.ToString();
             Console.WriteLine(TextOut.ToString());
             Console.WriteLine(this.tbTextOut.Text);
