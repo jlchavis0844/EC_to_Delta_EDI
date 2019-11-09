@@ -207,30 +207,36 @@ namespace EC_to_VSP_EDI {
 
             this.maritalStatusCodeDMG04 = this.MaritalTranslation(row.MaritalStatus);
             this.coverageLevelCodeHD05 = this.CoverageTranslation(row.CoverageDetails);
-            if (row.PlanEffectiveStartDate != null && row.PlanEffectiveStartDate != string.Empty) {
-                this.dateTimePeriodStartDTP03 = DateTime.Parse(row.PlanEffectiveStartDate).ToString("yyyyMMdd");
-            }
+            //if (row.PlanEffectiveStartDate != null && row.PlanEffectiveStartDate != string.Empty) {
+            //    this.dateTimePeriodStartDTP03 = DateTime.Parse(row.PlanEffectiveStartDate).ToString("yyyyMMdd");
+            //}
 
-            this.planCoverageDescriptionHD04 = Form1.DentalPlans[row.PlanImportID];
+            this.planCoverageDescriptionHD04 = row.PlanAdminName;
             if (row.CoverageDetails == "Terminated") {
                 this.dateTimePeriodEndDTP03 = DateTime.Parse(row.PlanEffectiveEndDate).ToString("yyyyMMdd");
             }
 
-            if (row.CoverageDetails == "Terminated") {
-                this.MaintenanceReasonCodeINS04 = "024";
-            } else if (row.NewBusiness == "Yes") {
-                this.MaintenanceReasonCodeINS04 = "021";
-            } else {
-                this.MaintenanceReasonCodeINS04 = "001";
-            }
+            //if (row.CoverageDetails == "Terminated") {
+            //    this.MaintenanceReasonCodeINS04 = "024";
+            //} else if (row.NewBusiness == "Yes") {
+            //    this.MaintenanceReasonCodeINS04 = "021";
+            //} else {
+            //    this.MaintenanceReasonCodeINS04 = "001";
+            //}
+            MaintenanceReasonCodeINS04 = string.Empty;
 
-            if (subscriberIndicatorINS01 == "Y" && row.Drop == "TRUE") {
-                MaintenanceTypeCodeINS03 = "024";
+            if (row.Drop == "TRUE") {
+                MaintenanceTypeCodeINS03 = "024"; // Terminate
+                this.dateTimePeriodStartDTP03 = "20191231";
             } else if (row.Add == "TRUE") {
-                MaintenanceTypeCodeINS03 = "021";
-            } else if (row.Drop == "TRUE") {
-                MaintenanceTypeCodeINS03 = "001";
-            } else MaintenanceTypeCodeINS03 = "030";
+                MaintenanceTypeCodeINS03 = "021"; //Add
+                this.dateTimePeriodStartDTP03 = "20200101";
+            } else { 
+                MaintenanceTypeCodeINS03 = "001"; // Maints
+                this.dateTimePeriodStartDTP03 = "20200101";
+            } // Update
+
+            MaintenanceTypeCodeHD01 = MaintenanceTypeCodeINS03;
         }
 
         public new string ToString() {
@@ -281,12 +287,21 @@ namespace EC_to_VSP_EDI {
             sb.AppendLine(SegmentIDHD + '*' + MaintenanceTypeCodeHD01 + '*' + BlankHD02 + '*' + InsuranceLineCodeHD03 + '*' +
                 this.planCoverageDescriptionHD04 + '*' + this.coverageLevelCodeHD05 + SegmentTerminator);
 
-            // DTP start
-            sb.AppendLine(SegmentIDDTP + '*' + BenefitStartDateDTP01 + '*' + DateTimeFormatDTP02 + '*' + this.dateTimePeriodStartDTP03 + SegmentTerminator);
 
-            // DTP end
-            if (!string.IsNullOrEmpty(this.dateTimePeriodEndDTP03)) {
-                sb.AppendLine(SegmentIDDTP + '*' + BenefitEndDateDTP01 + '*' + DateTimeFormatDTP02 + '*' + this.dateTimePeriodEndDTP03 + SegmentTerminator);
+            //// DTP start
+            //sb.AppendLine(SegmentIDDTP + '*' + BenefitStartDateDTP01 + '*' + DateTimeFormatDTP02 + '*' + this.dateTimePeriodStartDTP03 + SegmentTerminator);
+
+            //// DTP end
+            //if () {
+            //    sb.AppendLine(SegmentIDDTP + '*' + BenefitEndDateDTP01 + '*' + DateTimeFormatDTP02 + '*' + this.dateTimePeriodEndDTP03 + SegmentTerminator);
+            //}
+
+            if (MaintenanceTypeCodeINS03 == "001") {//Maints
+                sb.AppendLine(SegmentIDDTP + '*' + "303" + '*' + DateTimeFormatDTP02 + '*' + this.dateTimePeriodStartDTP03 + SegmentTerminator);
+            } else if(this.MaintenanceTypeCodeINS03 == "024") {//Term
+                sb.AppendLine(SegmentIDDTP + '*' + "349" + '*' + DateTimeFormatDTP02 + '*' + this.dateTimePeriodStartDTP03 + SegmentTerminator);
+            } else {//Add
+                sb.AppendLine(SegmentIDDTP + '*' + "348" + '*' + DateTimeFormatDTP02 + '*' + this.dateTimePeriodStartDTP03 + SegmentTerminator);
             }
 
             return sb.ToString();

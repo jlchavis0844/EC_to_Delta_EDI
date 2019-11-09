@@ -69,18 +69,20 @@ namespace EC_to_VSP_EDI {
                     this.lblFileLocation.Text = InputFile;
                     this.btnProcessEDI.Enabled = true;
 
-                    using (var reader = new StreamReader(InputFile)) {
+                    var tempFile = File.Open(InputFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                    using (var reader = new StreamReader(tempFile)) {
                         var csv = new CsvReader(reader);
                         csv.Configuration.HeaderValidated = null;
                         csv.Configuration.HasHeaderRecord = true;
                         csv.Configuration.RegisterClassMap<CensusRowClassMap>();
 
-                        Records = csv.GetRecords<CensusRow>().Where(rec => rec.CoverageDetails != "Waived"
-                        && DateTime.Parse(rec.PlanEffectiveEndDate) >= DateTime.Now).ToList()
-                        .Where(rec =>
-                            rec.CoverageDetails != "Waived" &&
-                            DateTime.Parse(rec.PlanEffectiveEndDate) >= DateTime.Now &&
-                            rec.PlanType == "Dental").ToList();
+                        Records = csv.GetRecords<CensusRow>().ToList();
+                        //Records = csv.GetRecords<CensusRow>().Where(rec => rec.CoverageDetails != "Waived"
+                        //&& DateTime.Parse(rec.PlanEffectiveEndDate) >= DateTime.Now).ToList()
+                        //.Where(rec =>
+                        //    rec.CoverageDetails != "Waived" &&
+                        //    DateTime.Parse(rec.PlanEffectiveEndDate) >= DateTime.Now &&
+                        //    rec.PlanType == "Dental").ToList();
 
                         Log.Info(Records.Count() + " records loaded from Census file.");
                     }
@@ -141,14 +143,17 @@ namespace EC_to_VSP_EDI {
             TextOut.AppendLine(Trailer.ToString());
 
             // Console.WriteLine(trailer.ToString());
-            TextOut = new StringBuilder(TextOut.ToString()
-                .Replace("\r\n\r\n", "\r\n").Trim('\0'));
+            //TextOut = new StringBuilder(TextOut.ToString()
+            //    .Replace("\r\n\r\n", "\r\n").Trim('\0'));
+            TextOut = new StringBuilder(TextOut.ToString().Replace("\r\n\r\n", "\r\n"));
 
             //this.tbTextOut.MaxLength = 10000;
             this.tbTextOut.Text = TextOut.ToString();
-            Console.WriteLine(TextOut.ToString());
-            Console.WriteLine(this.tbTextOut.Text);
             this.btnOutput.Enabled = true;
+
+            //Console.WriteLine(TextOut.ToString());
+            //Console.WriteLine(this.tbTextOut.Text);
+            //this.btnOutput.Enabled = true;
         }
 
         private void BtnSaveFile_Click(object sender, EventArgs e) {
