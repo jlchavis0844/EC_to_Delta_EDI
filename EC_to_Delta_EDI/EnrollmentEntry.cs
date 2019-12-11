@@ -117,6 +117,9 @@ namespace EC_to_VSP_EDI {
 
         // Constructor
         public EnrollmentEntry(CensusRow row) {
+            if (row.LastName == "Baeza")
+                Console.WriteLine("Found it");
+
             if (row.RelationshipCode == "0") {
                 this.subscriberIndicatorINS01 = "Y";
                 this.studentStatusCodeINS09 = string.Empty;
@@ -227,7 +230,8 @@ namespace EC_to_VSP_EDI {
 
             if (row.Drop == "TRUE") {
                 MaintenanceTypeCodeINS03 = "024"; // Terminate
-                this.dateTimePeriodStartDTP03 = "20191231";
+                this.dateTimePeriodEndDTP03 = "20191231";
+                this.dateTimePeriodStartDTP03 = "20190101";
             } else if (row.Add == "TRUE") {
                 MaintenanceTypeCodeINS03 = "021"; //Add
                 this.dateTimePeriodStartDTP03 = "20200101";
@@ -289,22 +293,25 @@ namespace EC_to_VSP_EDI {
 
 
             //// DTP start
-            //sb.AppendLine(SegmentIDDTP + '*' + BenefitStartDateDTP01 + '*' + DateTimeFormatDTP02 + '*' + this.dateTimePeriodStartDTP03 + SegmentTerminator);
+            sb.AppendLine(SegmentIDDTP + '*' + BenefitStartDateDTP01 + '*' + DateTimeFormatDTP02 + '*' + this.dateTimePeriodStartDTP03 + SegmentTerminator);
 
             //// DTP end
             //if () {
             //    sb.AppendLine(SegmentIDDTP + '*' + BenefitEndDateDTP01 + '*' + DateTimeFormatDTP02 + '*' + this.dateTimePeriodEndDTP03 + SegmentTerminator);
             //}
 
-            if (MaintenanceTypeCodeINS03 == "001") {//Maints
-                sb.AppendLine(SegmentIDDTP + '*' + "303" + '*' + DateTimeFormatDTP02 + '*' + this.dateTimePeriodStartDTP03 + SegmentTerminator);
-            } else if(this.MaintenanceTypeCodeINS03 == "024") {//Term
-                sb.AppendLine(SegmentIDDTP + '*' + "349" + '*' + DateTimeFormatDTP02 + '*' + this.dateTimePeriodStartDTP03 + SegmentTerminator);
-            } else {//Add
-                sb.AppendLine(SegmentIDDTP + '*' + "348" + '*' + DateTimeFormatDTP02 + '*' + this.dateTimePeriodStartDTP03 + SegmentTerminator);
-            }
+            //if (MaintenanceTypeCodeINS03 == "001") {//Maints
+            //    sb.AppendLine(SegmentIDDTP + '*' + "303" + '*' + DateTimeFormatDTP02 + '*' + this.dateTimePeriodStartDTP03 + SegmentTerminator);
+            //} else if (this.MaintenanceTypeCodeINS03 == "024") {//Term
+            //    sb.AppendLine(SegmentIDDTP + '*' + "349" + '*' + DateTimeFormatDTP02 + '*' + this.dateTimePeriodStartDTP03 + SegmentTerminator);
+            //} else {//Add
+            //    sb.AppendLine(SegmentIDDTP + '*' + "348" + '*' + DateTimeFormatDTP02 + '*' + this.dateTimePeriodStartDTP03 + SegmentTerminator);
+            //}
 
-            return sb.ToString();
+            if (this.MaintenanceTypeCodeINS03 == "024") {//Term
+                sb.AppendLine(SegmentIDDTP + '*' + "349" + '*' + DateTimeFormatDTP02 + '*' + this.dateTimePeriodEndDTP03 + SegmentTerminator);
+            }
+                return sb.ToString();
         }
 
         private string CoverageTranslation(string coverageIn) {
