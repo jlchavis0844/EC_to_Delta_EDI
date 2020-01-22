@@ -59,7 +59,8 @@ namespace EC_to_VSP_EDI {
             string type = "csv";
 
             using (OpenFileDialog ofd = new OpenFileDialog()) {
-                ofd.InitialDirectory = KnownFolders.Downloads.Path;
+                //ofd.InitialDirectory = KnownFolders.Downloads.Path;
+                ofd.InitialDirectory = @"\\nas3\Shared\RALIM\TDSGroup-Kronos\Campbell\2019 OE\Delta";
                 ofd.Filter = type + " files (*." + type + ")| *." + type;
                 ofd.FilterIndex = 1;
 
@@ -95,6 +96,7 @@ namespace EC_to_VSP_EDI {
         }
 
         public void Button1_Click(object sender, EventArgs e) {
+            Enrollments.Clear();
             if (!File.Exists(this.lblFileLocation.Text)) {
                 Log.Info("no file found loaded\n" + this.lblFileLocation);
                 this.btnProcessEDI.Enabled = false;
@@ -141,19 +143,33 @@ namespace EC_to_VSP_EDI {
             }
 
             TextOut.AppendLine(Trailer.ToString());
-
-            // Console.WriteLine(trailer.ToString());
-            //TextOut = new StringBuilder(TextOut.ToString()
-            //    .Replace("\r\n\r\n", "\r\n").Trim('\0'));
             TextOut = new StringBuilder(TextOut.ToString().Replace("\r\n\r\n", "\r\n"));
+            string[] segments = TextOut.ToString().Split('\n');
 
-            //this.tbTextOut.MaxLength = 10000;
+            string[] SE_Segs = segments[segments.Length - 4].Split('*');
+            Console.WriteLine(segments[segments.Length - 4]);
+
+            SE_Segs[1] = (segments.ToList().Count(ew => ew.Length > 3) - 4).ToString();
+            string NewSE = SE_Segs[0] + '*' + SE_Segs[1] + '*' + SE_Segs[2];
+            segments[segments.Length - 4] = NewSE;
+
+            TextOut.Clear();
+
+            foreach (string seg in segments) {
+                string cleanSeg = seg.Replace("\n", "");
+                cleanSeg = cleanSeg.Replace("\r", "");
+                TextOut.AppendLine(cleanSeg);
+            }
+
+            Console.WriteLine(segments[segments.Length - 4]);
+
+
+            //this.tbTextOut.MaxLength = int.MaxValue;
+            TextOut = new StringBuilder(TextOut.ToString());
             this.tbTextOut.Text = TextOut.ToString();
             this.btnOutput.Enabled = true;
-
-            //Console.WriteLine(TextOut.ToString());
-            //Console.WriteLine(this.tbTextOut.Text);
-            //this.btnOutput.Enabled = true;
+            //lblProcessedCnt.Text = Enrollments.Count().ToString() + " enrollments listed";
+            //Enrollments.Count().Where();
         }
 
         private void BtnSaveFile_Click(object sender, EventArgs e) {

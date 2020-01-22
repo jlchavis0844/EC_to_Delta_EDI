@@ -117,8 +117,6 @@ namespace EC_to_VSP_EDI {
 
         // Constructor
         public EnrollmentEntry(CensusRow row) {
-            if (row.LastName == "Baeza")
-                Console.WriteLine("Found it");
 
             if (row.RelationshipCode == "0") {
                 this.subscriberIndicatorINS01 = "Y";
@@ -210,9 +208,12 @@ namespace EC_to_VSP_EDI {
 
             this.maritalStatusCodeDMG04 = this.MaritalTranslation(row.MaritalStatus);
             this.coverageLevelCodeHD05 = this.CoverageTranslation(row.CoverageDetails);
-            //if (row.PlanEffectiveStartDate != null && row.PlanEffectiveStartDate != string.Empty) {
-            //    this.dateTimePeriodStartDTP03 = DateTime.Parse(row.PlanEffectiveStartDate).ToString("yyyyMMdd");
-            //}
+
+            if (row.PlanEffectiveStartDate != null && row.PlanEffectiveStartDate != string.Empty) {
+                this.dateTimePeriodStartDTP03 = DateTime.Parse(row.PlanEffectiveStartDate).ToString("yyyyMMdd");
+            } else {
+                this.dateTimePeriodStartDTP03 = "20200101";
+            }
 
             this.planCoverageDescriptionHD04 = row.PlanAdminName;
             if (row.CoverageDetails == "Terminated") {
@@ -228,19 +229,26 @@ namespace EC_to_VSP_EDI {
             //}
             MaintenanceReasonCodeINS04 = string.Empty;
 
-            if (row.Drop == "TRUE") {
-                MaintenanceTypeCodeINS03 = "024"; // Terminate
-                this.dateTimePeriodEndDTP03 = "20191231";
-                this.dateTimePeriodStartDTP03 = "20190101";
-            } else if (row.Add == "TRUE") {
-                MaintenanceTypeCodeINS03 = "021"; //Add
-                this.dateTimePeriodStartDTP03 = "20200101";
-            } else { 
-                MaintenanceTypeCodeINS03 = "001"; // Maints
-                this.dateTimePeriodStartDTP03 = "20200101";
-            } // Update
+            //if (row.Drop == "TRUE") {
+            //    MaintenanceTypeCodeINS03 = "024"; // Terminate
+            //    this.dateTimePeriodEndDTP03 = "20191231";
+            //    this.dateTimePeriodStartDTP03 = "20190101";
+            //} else if (row.Add == "TRUE") {
+            //    MaintenanceTypeCodeINS03 = "021"; //Add
+            //    this.dateTimePeriodStartDTP03 = "20200101";
+            //} else { 
+            //    MaintenanceTypeCodeINS03 = "001"; // Maints
+            //    this.dateTimePeriodStartDTP03 = "20200101";
+            //} // Update
 
+
+
+//*****************************HARD CODING FOR OE, Remove****************************************************************
+
+            MaintenanceTypeCodeINS03 = "030"; 
             MaintenanceTypeCodeHD01 = MaintenanceTypeCodeINS03;
+
+
         }
 
         public new string ToString() {
