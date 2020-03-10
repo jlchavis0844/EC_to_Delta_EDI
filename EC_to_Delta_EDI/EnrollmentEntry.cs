@@ -18,7 +18,7 @@ namespace EC_to_VSP_EDI {
         private const string SegmentIDINS = "INS";
         private readonly string subscriberIndicatorINS01;
         private readonly string individualRelationshipCodeINS02;
-        private readonly string MaintenanceTypeCodeINS03;
+        private const string MaintenanceTypeCodeINS03 = "030";
         private readonly string MaintenanceReasonCodeINS04 = string.Empty;
         private readonly string benefitStatusCodeINS05;
         private readonly string INS06 = string.Empty;
@@ -115,8 +115,28 @@ namespace EC_to_VSP_EDI {
         private readonly string dateTimePeriodStartDTP03;
         private readonly string dateTimePeriodEndDTP03;
 
+        public CensusRow myRow;
+
         // Constructor
         public EnrollmentEntry(CensusRow row) {
+            myRow = row;
+
+            if (row.Drop.ToUpper() == "TRUE") {
+                this.MaintenanceTypeCodeHD01 = "024";
+            } else if (row.Add.ToUpper() == "TRUE") {
+                this.MaintenanceTypeCodeHD01 = "021";
+            } else {
+                this.MaintenanceTypeCodeHD01 = "030";
+            }
+
+            // = MaintenanceTypeCodeINS03;
+
+            if(this.MaintenanceTypeCodeHD01 == "024") {
+                dateTimePeriodStartDTP03 = DateTime.Parse(row.PlanEffectiveStartDate).ToString("yyyyMMdd");
+                dateTimePeriodEndDTP03 = DateTime.Parse(row.EffectiveDate).AddDays(-1).ToString("yyyyMMdd");
+            } else {
+                dateTimePeriodStartDTP03 = DateTime.Parse(row.EffectiveDate).ToString("yyyyMMdd");
+            }
 
             if (row.RelationshipCode == "0") {
                 this.subscriberIndicatorINS01 = "Y";
@@ -209,45 +229,10 @@ namespace EC_to_VSP_EDI {
             this.maritalStatusCodeDMG04 = this.MaritalTranslation(row.MaritalStatus);
             this.coverageLevelCodeHD05 = this.CoverageTranslation(row.CoverageDetails);
 
-            if (row.PlanEffectiveStartDate != null && row.PlanEffectiveStartDate != string.Empty) {
-                this.dateTimePeriodStartDTP03 = DateTime.Parse(row.PlanEffectiveStartDate).ToString("yyyyMMdd");
-            } else {
-                this.dateTimePeriodStartDTP03 = "20200101";
-            }
 
             this.planCoverageDescriptionHD04 = row.PlanAdminName;
-            if (row.CoverageDetails == "Terminated") {
-                this.dateTimePeriodEndDTP03 = DateTime.Parse(row.PlanEffectiveEndDate).ToString("yyyyMMdd");
-            }
 
-            //if (row.CoverageDetails == "Terminated") {
-            //    this.MaintenanceReasonCodeINS04 = "024";
-            //} else if (row.NewBusiness == "Yes") {
-            //    this.MaintenanceReasonCodeINS04 = "021";
-            //} else {
-            //    this.MaintenanceReasonCodeINS04 = "001";
-            //}
             MaintenanceReasonCodeINS04 = string.Empty;
-
-            //if (row.Drop == "TRUE") {
-            //    MaintenanceTypeCodeINS03 = "024"; // Terminate
-            //    this.dateTimePeriodEndDTP03 = "20191231";
-            //    this.dateTimePeriodStartDTP03 = "20190101";
-            //} else if (row.Add == "TRUE") {
-            //    MaintenanceTypeCodeINS03 = "021"; //Add
-            //    this.dateTimePeriodStartDTP03 = "20200101";
-            //} else { 
-            //    MaintenanceTypeCodeINS03 = "001"; // Maints
-            //    this.dateTimePeriodStartDTP03 = "20200101";
-            //} // Update
-
-
-
-//*****************************HARD CODING FOR OE, Remove****************************************************************
-
-            MaintenanceTypeCodeINS03 = "030"; 
-            MaintenanceTypeCodeHD01 = MaintenanceTypeCodeINS03;
-
 
         }
 
@@ -300,26 +285,15 @@ namespace EC_to_VSP_EDI {
                 this.planCoverageDescriptionHD04 + '*' + this.coverageLevelCodeHD05 + SegmentTerminator);
 
 
-            //// DTP start
+            //DTP start
             sb.AppendLine(SegmentIDDTP + '*' + BenefitStartDateDTP01 + '*' + DateTimeFormatDTP02 + '*' + this.dateTimePeriodStartDTP03 + SegmentTerminator);
 
-            //// DTP end
-            //if () {
-            //    sb.AppendLine(SegmentIDDTP + '*' + BenefitEndDateDTP01 + '*' + DateTimeFormatDTP02 + '*' + this.dateTimePeriodEndDTP03 + SegmentTerminator);
-            //}
-
-            //if (MaintenanceTypeCodeINS03 == "001") {//Maints
-            //    sb.AppendLine(SegmentIDDTP + '*' + "303" + '*' + DateTimeFormatDTP02 + '*' + this.dateTimePeriodStartDTP03 + SegmentTerminator);
-            //} else if (this.MaintenanceTypeCodeINS03 == "024") {//Term
-            //    sb.AppendLine(SegmentIDDTP + '*' + "349" + '*' + DateTimeFormatDTP02 + '*' + this.dateTimePeriodStartDTP03 + SegmentTerminator);
-            //} else {//Add
-            //    sb.AppendLine(SegmentIDDTP + '*' + "348" + '*' + DateTimeFormatDTP02 + '*' + this.dateTimePeriodStartDTP03 + SegmentTerminator);
-            //}
-
-            if (this.MaintenanceTypeCodeINS03 == "024") {//Term
-                sb.AppendLine(SegmentIDDTP + '*' + "349" + '*' + DateTimeFormatDTP02 + '*' + this.dateTimePeriodEndDTP03 + SegmentTerminator);
+            //DTP End
+            if (MaintenanceTypeCodeHD01 == "024") {
+                sb.AppendLine(SegmentIDDTP + '*' + BenefitEndDateDTP01 + '*' + DateTimeFormatDTP02 + '*' + this.dateTimePeriodEndDTP03 + SegmentTerminator);
             }
-                return sb.ToString();
+            
+            return sb.ToString();
         }
 
         private string CoverageTranslation(string coverageIn) {

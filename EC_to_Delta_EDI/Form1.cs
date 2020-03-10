@@ -33,7 +33,7 @@ namespace EC_to_VSP_EDI {
             this.InitializeComponent();
             this.cbType.SelectedIndex = 0;
 
-            // log4net.Config.XmlConfigurator.Configure();
+            log4net.Config.XmlConfigurator.Configure();
             string interchangeNumber = InterchangeTracker.GetInterchangeNumber().ToString();
             string dateStr = InterchangeTracker.GetInterchangeDate();
             int year = Convert.ToInt32("20" + dateStr.Substring(0, 2));
