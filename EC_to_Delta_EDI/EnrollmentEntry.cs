@@ -121,9 +121,17 @@ namespace EC_to_VSP_EDI {
         public EnrollmentEntry(CensusRow row) {
             myRow = row;
 
-            if (row.Drop.ToUpper() == "TRUE") {
+            //if (row.Drop.ToUpper() == "TRUE") {
+            //    this.MaintenanceTypeCodeHD01 = "024";
+            //} else if (row.Add.ToUpper() == "TRUE") {
+            //    this.MaintenanceTypeCodeHD01 = "021";
+            //} else {
+            //    this.MaintenanceTypeCodeHD01 = "030";
+            //}
+
+            if (row.ElectionStatus.ToUpper() == "DROP") {
                 this.MaintenanceTypeCodeHD01 = "024";
-            } else if (row.Add.ToUpper() == "TRUE") {
+            } else if (row.ElectionStatus.ToUpper() == "ADD") {
                 this.MaintenanceTypeCodeHD01 = "021";
             } else {
                 this.MaintenanceTypeCodeHD01 = "030";
@@ -131,7 +139,7 @@ namespace EC_to_VSP_EDI {
 
             // = MaintenanceTypeCodeINS03;
 
-            if(this.MaintenanceTypeCodeHD01 == "024") {
+            if (this.MaintenanceTypeCodeHD01 == "024") {
                 dateTimePeriodStartDTP03 = DateTime.Parse(row.PlanEffectiveStartDate).ToString("yyyyMMdd");
                 dateTimePeriodEndDTP03 = DateTime.Parse(row.EffectiveDate).AddDays(-1).ToString("yyyyMMdd");
             } else {

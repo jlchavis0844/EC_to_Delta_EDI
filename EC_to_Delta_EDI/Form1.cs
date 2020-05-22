@@ -75,6 +75,7 @@ namespace EC_to_VSP_EDI {
                         var csv = new CsvReader(reader);
                         csv.Configuration.HeaderValidated = null;
                         csv.Configuration.HasHeaderRecord = true;
+                        csv.Configuration.MissingFieldFound = null;
                         csv.Configuration.RegisterClassMap<CensusRowClassMap>();
 
                         Records = csv.GetRecords<CensusRow>().ToList();
@@ -176,6 +177,7 @@ namespace EC_to_VSP_EDI {
             FolderBrowserDialog fbd = new FolderBrowserDialog();
             fbd.Description = "Select the directory to output files to";
             fbd.ShowNewFolderButton = true;
+            fbd.SelectedPath = Path.GetDirectoryName(InputFile);
 
             // fbd.RootFolder = Environment.SpecialFolder.MyDocuments;
             DialogResult result = fbd.ShowDialog();
@@ -205,7 +207,7 @@ namespace EC_to_VSP_EDI {
         }
 
         private void BtnOutput_Click(object sender, EventArgs e) {
-            string outputFileLocation = OutputFolder + @"\t" + DateTime.Now.ToString("yyyyMMdd") + ".txt";
+            string outputFileLocation = OutputFolder + @"\pDDCA07012_" + DateTime.Now.ToString("yyyyMMdd") + ".txt";
             Log.Info("attempting to save EDI to " + outputFileLocation);
             char[] temp = new char[] { '\r', '\n' };
             try {

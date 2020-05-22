@@ -188,8 +188,7 @@ public class CensusRow {
     public string E_SignDate { get; set; }
 
     public string CalPERS_ID { get; set; }
-    public string Add { get; set; }
-    public string Drop { get; set; }
+    public string Changes { get; set; }
 
 
     // public string EnrolledBy { get; set; }
@@ -199,7 +198,7 @@ public class CensusRow {
 
     /// <inheritdoc/>
     public override string ToString() {
-        string retStr = this.CompanyName + " | " + this.EID + " | " + this.Location + " | " + this.FirstName + " | " +
+        string retStr = this.Changes + " | " + this.CompanyName + " | " + this.EID + " | " + this.Location + " | " + this.FirstName + " | " +
             this.MiddleName + " | " + this.LastName + " | " + this.Relationship + " | " + this.RelationshipCode + " | " +
             this.SSN + " | " + this.Gender + " | " + this.BirthDate + " | " + this.Race + " | " + this.Citizenship + " | " +
             this.Address1 + " | " + this.Address2 + " | " + this.City + " | " + this.State + " | " + this.Zip + " | " +
